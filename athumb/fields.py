@@ -136,7 +136,7 @@ class ImageWithThumbsFieldFile(ImageFieldFile):
 
         exif = dict(image._getexif() or {})
         if exif.items():
-            found_orientation = exif[orientation]
+            found_orientation = exif.get(orientation)
             if found_orientation == 3:
                 image = image.rotate(180, expand=True)
             elif found_orientation == 6:
@@ -228,8 +228,8 @@ class ImageWithThumbsField(ImageField):
     Usage example:
     ==============
     photo = ImageWithThumbsField(upload_to='images', thumbs=((125,125),(300,200),)
-        
-    Note: The 'thumbs' attribute is not required. If you don't provide it, 
+
+    Note: The 'thumbs' attribute is not required. If you don't provide it,
     ImageWithThumbsField will act as a normal ImageField
     """
     attr_class = ImageWithThumbsFieldFile
