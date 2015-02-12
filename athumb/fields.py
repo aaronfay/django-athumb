@@ -52,7 +52,7 @@ class ImageWithThumbsFieldFile(ImageFieldFile):
         cache_key = None
 
         if check_cache:
-            cache_key = "Thumbcache_%s_%s%s" % (self.url,
+            cache_key = "Thumbcache_%s_%s%s" % (self.url.replace(' ', '-'),
                                                    thumb_name,
                                                    ssl_postfix)
             cache_key = cache_key.strip()
