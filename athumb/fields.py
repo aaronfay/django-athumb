@@ -124,7 +124,12 @@ class ImageWithThumbsFieldFile(ImageFieldFile):
             else:
                 raise
 
-    def generate_thumbs(self, name, content):
+    def generate_thumbs(self, name, content, thumb=None):
+
+        thumbs = self.field.thumbs
+        if thumb:
+            thumbs = (thumb, thumb)
+
         # see http://code.djangoproject.com/ticket/8222 for details
         content.seek(0)
         image = Image.open(content)

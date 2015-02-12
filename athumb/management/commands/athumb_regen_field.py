@@ -5,12 +5,15 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.loading import get_model
 
 class Command(BaseCommand):
-    args = '<app.model> <field>'
+    args = '<app.model> <field> [ids=<id>[,<id>]] [thumb=<thumb-name>]'
     help = 'Re-generates thumbnails for all instances of the given model, for the given field.'
 
     def handle(self, *args, **options):
         self.args = args
         self.options = options
+
+        self.ids = []
+        self.thumb = None
 
         self.validate_input()
         self.parse_input()
@@ -21,7 +24,7 @@ class Command(BaseCommand):
 
         if num_args < 2:
             raise CommandError("Please pass the app.model and the field to generate thumbnails for.")
-        if num_args > 2:
+        if num_args > 4:
             raise CommandError("Too many arguments provided.")
 
         if '.' not in self.args[0]:
@@ -34,11 +37,21 @@ class Command(BaseCommand):
         app_split = self.args[0].split('.')
         app = app_split[0]
         model_name = app_split[1].lower()
-        
+
         self.model = get_model(app, model_name)
 
         # String field name to re-generate.
         self.field = self.args[1]
+
+        # everything at the end
+        for item in self.args[2:len(self.args)]:
+            if 'ids=' in item:
+                self.ids = str(item.split('=')[1]).split(',')
+            elif 'thumb=' in item:
+                self.thumb = item.split('=')[1]
+            else:
+                raise CommandError('Unknown option {}'.format(item))
+
 
     def regenerate_thumbs(self):
         """
@@ -47,7 +60,13 @@ class Command(BaseCommand):
         it's simple.
         """
         Model = self.model
-        instances = Model.objects.all()
+        if self.ids:
+            print "Generating thumbs for ids: {}".format(self.ids)
+            instances = Model.objects.filter(id__in=self.ids)
+        else:
+            print "Generating thumbs for all instances..."
+            instances = Model.objects.all()
+
         num_instances = instances.count()
         # Filenames are keys in here, to help avoid re-genning something that
         # we have already done.
@@ -104,9 +123,8 @@ class Command(BaseCommand):
 
             # Saving pumps it back through the thumbnailer, if this is a
             # ThumbnailField. If not, it's still pretty harmless.
-
             try:
-                file.generate_thumbs(file_name, file_contents)
+                file.generate_thumbs(file_name, file_contents, self.thumb)
             except IOError, e:
                 print "(%d/%d) ID %d --  Error -- Image may be corrupt)" % (
                     counter,

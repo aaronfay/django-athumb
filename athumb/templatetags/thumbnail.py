@@ -105,8 +105,9 @@ class ThumbnailNode(Node):
                 try:
                     thumbnail = relative_source.generate_url(requested_name,
                                                              ssl_mode=ssl_mode)
-                except:
+                except Exception as e:
                     #import traceback
+                    print e
                     #traceback.print_stack()
                     print "ERROR: Using {% thumbnail %} tag with "\
                           "a regular ImageField instead of ImageWithThumbsField:", self.source_var
