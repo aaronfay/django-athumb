@@ -75,6 +75,7 @@ class Command(BaseCommand):
         counter = 1
         for instance in instances:
             file = getattr(instance, self.field)
+
             if not file:
                 print "(%d/%d) ID: %d -- Skipped -- No file" % (counter,
                                                                 num_instances,
